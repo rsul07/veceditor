@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QMessageBox
 from PySide6.QtGui import QCloseEvent, QAction
+from PySide6.QtCore import Qt
 
 class VectorEditorWindow(QMainWindow):
     def __init__(self):
@@ -7,6 +8,9 @@ class VectorEditorWindow(QMainWindow):
 
         self.setWindowTitle("Vector Editor")
         self.resize(800, 600)
+
+        # Trigger floating in window manager
+        self.setWindowFlag(Qt.WindowType.Dialog, True)
 
         self._init_ui()
         
