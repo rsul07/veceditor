@@ -1,6 +1,9 @@
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import (QMainWindow, QMessageBox, QWidget, 
+                                                       QVBoxLayout, QHBoxLayout, QPushButton, QFrame)
 from PySide6.QtGui import QCloseEvent, QAction
 from PySide6.QtCore import Qt
+
+from src.widgets.canvas import EditorCanvas
 
 class VectorEditorWindow(QMainWindow):
     def __init__(self):
@@ -38,8 +41,31 @@ class VectorEditorWindow(QMainWindow):
         self._setup_layout()
 
     def _setup_layout(self):
-        # Setup layout
-        pass
+        # 1. Create Main Container
+        container = QWidget()
+        self.setCentralWidget(container)
+
+        # 2. Main Layout (Horizontal: Left Panel | Right Canvas)
+        main_layout = QHBoxLayout(container)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        # --- Left Panel (Tools) ---
+        tools_panel = QFrame()
+        tools_panel.setFixedWidth(120)
+        tools_panel.setStyleSheet("background-color: #f0f0f0;")
+
+        tools_layout = QVBoxLayout(tools_panel)
+        tools_layout.addWidget(QPushButton("Line"))
+        tools_layout.addWidget(QPushButton("Rect"))
+        tools_layout.addWidget(QPushButton("Ellipse"))
+        tools_layout.addStretch() # Pushes buttons to the top
+
+        # --- Right Part (Canvas) ---
+        self.canvas = EditorCanvas()
+
+        # 3. Assemble
+        main_layout.addWidget(tools_panel)
+        main_layout.addWidget(self.canvas)
 
     def closeEvent(self, event: QCloseEvent):
         reply = QMessageBox.question(
