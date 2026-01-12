@@ -17,3 +17,8 @@ class EditorCanvas(QGraphicsView):
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.scene.addText("Hello, Vector World!").setPos(350, 280)
+        
+        self.active_tool = None
+
+    def set_tool(self, tool_name: str):
+        self.active_tool = tool_name

@@ -78,6 +78,7 @@ class VectorEditorWindow(QMainWindow):
 
         # --- Right Part (Canvas) ---
         self.canvas = EditorCanvas()
+        self.canvas.set_tool(self.current_tool)
 
         # 3. Assemble
         main_layout.addWidget(tools_panel)
@@ -90,6 +91,8 @@ class VectorEditorWindow(QMainWindow):
         self.btn_line.setChecked(tool_name == "line")
         self.btn_rect.setChecked(tool_name == "rect")
         self.btn_ellipse.setChecked(tool_name == "ellipse")
+
+        self.canvas.set_tool(tool_name)
 
     def closeEvent(self, event: QCloseEvent):
         reply = QMessageBox.question(
