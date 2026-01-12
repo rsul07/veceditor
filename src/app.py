@@ -55,9 +55,25 @@ class VectorEditorWindow(QMainWindow):
         tools_panel.setStyleSheet("background-color: #f0f0f0;")
 
         tools_layout = QVBoxLayout(tools_panel)
-        tools_layout.addWidget(QPushButton("Line"))
-        tools_layout.addWidget(QPushButton("Rect"))
-        tools_layout.addWidget(QPushButton("Ellipse"))
+
+        self.btn_line = QPushButton("Line")
+        self.btn_rect = QPushButton("Rect")
+        self.btn_ellipse = QPushButton("Ellipse")
+
+        self.btn_line.setCheckable(True)
+        self.btn_rect.setCheckable(True)
+        self.btn_ellipse.setCheckable(True)
+
+        self.btn_line.setChecked(True) # Default selected tool
+        self.current_tool = "line"
+
+        self.btn_line.clicked.connect(lambda: self.on_change_tool("line"))
+        self.btn_rect.clicked.connect(lambda: self.on_change_tool("rect"))
+        self.btn_ellipse.clicked.connect(lambda: self.on_change_tool("ellipse"))
+
+        tools_layout.addWidget(self.btn_line)
+        tools_layout.addWidget(self.btn_rect)
+        tools_layout.addWidget(self.btn_ellipse)
         tools_layout.addStretch() # Pushes buttons to the top
 
         # --- Right Part (Canvas) ---
@@ -66,6 +82,14 @@ class VectorEditorWindow(QMainWindow):
         # 3. Assemble
         main_layout.addWidget(tools_panel)
         main_layout.addWidget(self.canvas)
+
+    def on_change_tool(self, tool_name: str):
+        self.current_tool = tool_name
+        print("Tool selected:", tool_name)
+
+        self.btn_line.setChecked(tool_name == "line")
+        self.btn_rect.setChecked(tool_name == "rect")
+        self.btn_ellipse.setChecked(tool_name == "ellipse")
 
     def closeEvent(self, event: QCloseEvent):
         reply = QMessageBox.question(
