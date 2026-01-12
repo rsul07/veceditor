@@ -10,7 +10,7 @@ class VectorEditorWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Vector Editor")
-        self.resize(800, 600)
+        self.resize(1000, 700)
 
         # Trigger floating in window manager
         self.setWindowFlag(Qt.WindowType.Dialog, True)
