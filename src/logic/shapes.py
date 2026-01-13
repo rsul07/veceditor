@@ -1,10 +1,12 @@
-from abc import ABC, abstractmethod
 from PySide6.QtWidgets import QGraphicsPathItem
 from PySide6.QtGui import QPen, QColor, QPainterPath
 
-class Shape(QGraphicsPathItem, ABC):
+class Shape(QGraphicsPathItem):
     def __init__(self, color: str = "black", stroke_width: int = 2):
         super().__init__() 
+
+        if type(self) is Shape:
+            raise NotImplementedError("Abstract class Shape cannot be instantiated directly.")
         
         self.color = color
         self.stroke_width = stroke_width
@@ -26,15 +28,13 @@ class Shape(QGraphicsPathItem, ABC):
     # --- Abstract Contract ---
 
     @property
-    @abstractmethod
     def type_name(self) -> str:
         """String identifier for the shape type"""
-        pass
+        raise NotImplementedError("Shape subclasses must implement type_name")
 
-    @abstractmethod
     def to_dict(self) -> dict:
         """Serialize shape data to dictionary"""
-        pass
+        raise NotImplementedError("Shape subclasses must implement to_dict")
         
     # --- Common Methods ---
     
