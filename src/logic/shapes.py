@@ -35,7 +35,11 @@ class Shape(QGraphicsPathItem):
     def to_dict(self) -> dict:
         """Serialize shape data to dictionary"""
         raise NotImplementedError("Shape subclasses must implement to_dict")
-        
+
+    def set_geometry(self, start_point, end_point):
+        """Update shape geometry based on start and end points"""
+        raise NotImplementedError("Shape subclasses must implement set_geometry")
+
     # --- Common Methods ---
     
     def set_active_color(self, color: str):
@@ -55,6 +59,13 @@ class Rectangle(Shape):
         path = QPainterPath()
         path.addRect(self.x, self.y, self.w, self.h)
         self.setPath(path)
+
+    def set_geometry(self, start_point, end_point):
+        self.x = min(start_point.x(), end_point.x())
+        self.y = min(start_point.y(), end_point.y())
+        self.w = abs(end_point.x() - start_point.x())
+        self.h = abs(end_point.y() - start_point.y())
+        self._create_geometry()
 
     @property
     def type_name(self) -> str:
@@ -85,6 +96,13 @@ class Ellipse(Shape):
         path.addEllipse(self.x, self.y, self.w, self.h)
         self.setPath(path)
 
+    def set_geometry(self, start_point, end_point):
+        self.x = min(start_point.x(), end_point.x())
+        self.y = min(start_point.y(), end_point.y())
+        self.w = abs(end_point.x() - start_point.x())
+        self.h = abs(end_point.y() - start_point.y())
+        self._create_geometry()
+
     @property
     def type_name(self) -> str:
         return "ellipse"
@@ -114,6 +132,13 @@ class Line(Shape):
         path.moveTo(self.x1, self.y1)
         path.lineTo(self.x2, self.y2)
         self.setPath(path)
+
+    def set_geometry(self, start_point, end_point):
+        self.x1 = start_point.x()
+        self.y1 = start_point.y()
+        self.x2 = end_point.x()
+        self.y2 = end_point.y()
+        self._create_geometry()
 
     @property
     def type_name(self) -> str:
