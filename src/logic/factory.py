@@ -1,4 +1,4 @@
-from src.logic.shapes import Rectangle, Line, Ellipse
+from src.logic.shapes import Rectangle, Line, Ellipse, Group
 
 class ShapeFactory:
     @staticmethod
@@ -26,3 +26,53 @@ class ShapeFactory:
             return Ellipse(x, y, w, h, color)
         else:
             raise ValueError(f"Unknown shape type: {shape_type}")
+
+    @staticmethod
+    def from_dict(data: dict):
+        """Recursively restores object tree"""
+        shape_type = data.get("type")
+
+        if shape_type == "group":
+            return ShapeFactory._create_group(data)
+        elif shape_type in ["rect", "line", "ellipse"]:
+            return ShapeFactory._create_primitive(data)
+        else:
+            raise ValueError(f"Unknown type: {shape_type}")
+
+    @staticmethod
+    def _create_primitive(data: dict):
+        props = data.get("props", {})
+        shape_type = data.get("type")
+
+        if shape_type == "rect":
+            color = props.get("color", "black")
+            obj = Rectangle(props['x'], props['y'], props['w'], props['h'], color)
+        elif shape_type == "line":
+            color = props.get("color", "black")
+            obj = Line(props['x1'], props['y1'], props['x2'], props['y2'], color)
+        elif shape_type == "ellipse":
+             color = props.get("color", "black")
+             obj = Ellipse(props['x'], props['y'], props['w'], props['h'], color)
+
+        if "pos" in data:
+            obj.setPos(data["pos"][0], data["pos"][1])
+
+        return obj
+
+    @staticmethod
+    def _create_group(data: dict):
+        group = Group()
+
+        x, y = data.get("pos", [0, 0])
+        group.setPos(x, y)
+
+        children_data = data.get("children", [])
+        for child_dict in children_data:
+            child_item = ShapeFactory.from_dict(child_dict)
+
+            group.addToGroup(child_item)
+
+            if "pos" in child_dict:
+                child_item.setPos(child_dict["pos"][0], child_dict["pos"][1])
+
+        return group

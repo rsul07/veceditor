@@ -103,6 +103,7 @@ class Rectangle(Shape):
     def to_dict(self) -> dict:
         return {
             "type": self.type_name,
+            "pos": [self.pos().x(), self.pos().y()],
             "props": {
                 "x": self.x, "y": self.y, 
                 "w": self.w, "h": self.h,
@@ -139,6 +140,7 @@ class Ellipse(Shape):
     def to_dict(self) -> dict:
         return {
             "type": self.type_name,
+            "pos": [self.pos().x(), self.pos().y()],
             "props": {
                 "x": self.x, "y": self.y, 
                 "w": self.w, "h": self.h,
@@ -176,6 +178,7 @@ class Line(Shape):
     def to_dict(self) -> dict:
         return {
             "type": self.type_name,
+            "pos": [self.pos().x(), self.pos().y()],
             "props": {
                 "x1": self.x1, "y1": self.y1,
                 "x2": self.x2, "y2": self.y2,
