@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from PySide6.QtWidgets import QGraphicsView
 from PySide6.QtCore import Qt, QPointF
+
 from src.logic.factory import ShapeFactory
 
 class Tool(ABC):
     def __init__(self, view: QGraphicsView):
         self.view = view
-        self.scene = view.scene()
+        self.scene = view.scene
 
     @abstractmethod
     def mouse_press(self, event): pass
