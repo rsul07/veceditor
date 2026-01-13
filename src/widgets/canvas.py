@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPainter
 
 from src.logic.factory import ShapeFactory
+from src.logic.tools import SelectionTool, CreationTool
 
 class EditorCanvas(QGraphicsView):
     def __init__(self):
@@ -11,38 +12,32 @@ class EditorCanvas(QGraphicsView):
         self.setScene(self.scene)
         self.scene.setSceneRect(0, 0, 800, 600)
         self.setRenderHint(QPainter.Antialiasing) # Enable Antialiasing for smooth lines
-        
-        self.active_tool = "line"
+
+        self.tools = {
+            "selection": SelectionTool(self),
+            "line": CreationTool(self, "line"),
+            "rect": CreationTool(self, "rect"),
+            "ellipse": CreationTool(self, "ellipse"),
+        }
+
+        self.active_tool = self.tools["line"] 
         self.current_color = "black"
-        self.start_point = None
 
     def set_tool(self, tool_name: str):
-        self.active_tool = tool_name
+        if tool_name in self.tools:
+            self.active_tool = self.tools[tool_name]
+
+        # Cursor logic
+        if tool_name == "selection":
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+        else:
+            self.setCursor(Qt.CursorShape.CrossCursor)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.start_point = self.mapToScene(event.pos())
+        self.active_tool.mouse_press(event)
 
-        super().mousePressEvent(event)
+    def mouseMoveEvent(self, event):
+        self.active_tool.mouse_move(event)
 
     def mouseReleaseEvent(self, event):
-        if self.start_point and event.button() == Qt.MouseButton.LeftButton:
-            end_point = self.mapToScene(event.pos())
-
-            try:
-                new_shape = ShapeFactory.create_shape(
-                    self.active_tool,
-                    self.start_point,
-                    end_point,
-                    self.current_color
-                )
-
-                self.scene.addItem(new_shape)
-                print(f"Created: {self.active_tool}")
-
-            except ValueError:
-                pass # Handle non-shape tools (like cursor)
-            finally:
-                self.start_point = None
-
-        super().mouseReleaseEvent(event)
+        self.active_tool.mouse_release(event)
