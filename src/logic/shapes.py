@@ -41,3 +41,91 @@ class Shape(QGraphicsPathItem, ABC):
     def set_active_color(self, color: str):
         self.color = color
         self._setup_pen()
+
+class Rectangle(Shape):
+    def __init__(self, x, y, w, h, color="black", stroke_width=2):
+        super().__init__(color, stroke_width)
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self._create_geometry()
+
+    def _create_geometry(self):
+        path = QPainterPath()
+        path.addRect(self.x, self.y, self.w, self.h)
+        self.setPath(path)
+
+    @property
+    def type_name(self) -> str:
+        return "rect"
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.type_name,
+            "props": {
+                "x": self.x, "y": self.y, 
+                "w": self.w, "h": self.h,
+                "color": self.pen().color().name(),
+                "stroke_width": self.pen().width()
+            }
+        }
+
+class Ellipse(Shape):
+    def __init__(self, x, y, w, h, color="black", stroke_width=2):
+        super().__init__(color, stroke_width)
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self._create_geometry()
+
+    def _create_geometry(self):
+        path = QPainterPath()
+        path.addEllipse(self.x, self.y, self.w, self.h)
+        self.setPath(path)
+
+    @property
+    def type_name(self) -> str:
+        return "ellipse"
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.type_name,
+            "props": {
+                "x": self.x, "y": self.y, 
+                "w": self.w, "h": self.h,
+                "color": self.pen().color().name(),
+                "stroke_width": self.pen().width()
+            }
+        }
+
+class Line(Shape):
+    def __init__(self, x1, y1, x2, y2, color="black", stroke_width=2):
+        super().__init__(color, stroke_width)
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+        self._create_geometry()
+
+    def _create_geometry(self):
+        path = QPainterPath()
+        path.moveTo(self.x1, self.y1)
+        path.lineTo(self.x2, self.y2)
+        self.setPath(path)
+
+    @property
+    def type_name(self) -> str:
+        return "line"
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.type_name,
+            "props": {
+                "x1": self.x1, "y1": self.y1,
+                "x2": self.x2, "y2": self.y2,
+                "color": self.pen().color().name(),
+                "stroke_width": self.pen().width()
+            }
+        }
