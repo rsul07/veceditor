@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QGraphicsView, QGraphicsScene
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPainter
 
-from src.logic.factory import ShapeFactory
+from src.logic.shapes import Group
 from src.logic.tools import SelectionTool, CreationTool
 
 class EditorCanvas(QGraphicsView):
@@ -32,6 +32,28 @@ class EditorCanvas(QGraphicsView):
             self.setCursor(Qt.CursorShape.ArrowCursor)
         else:
             self.setCursor(Qt.CursorShape.CrossCursor)
+
+    def group_selection(self):
+        selected_items = self.scene.selectedItems()
+        if len(selected_items) < 1:
+            return  # Need at least two items to group
+
+        group = Group()
+        self.scene.addItem(group)
+
+        for item in selected_items:
+            item.setSelected(False)
+            group.addToGroup(item)
+
+        group.setSelected(True)
+        print("Group created")
+
+    def ungroup_selection(self):
+        selected_items = self.scene.selectedItems()
+        for item in selected_items:
+            if isinstance(item, Group):
+                self.scene.destroyGroup(item)
+                print("Group destroyed")
 
     def mousePressEvent(self, event):
         self.active_tool.mouse_press(event)

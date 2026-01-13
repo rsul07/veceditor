@@ -20,12 +20,15 @@ class VectorEditorWindow(QMainWindow):
         print("Window initialized")
 
     def _init_ui(self):
+        self._setup_layout()
+
         # Status bar
         self.statusBar().showMessage("Ready")
 
         # Menu bar
         menubar = self.menuBar()
         file_menu = menubar.addMenu("&File")
+        edit_menu = menubar.addMenu("&Edit")
 
         # Actions
         exit_action = QAction("Exit", self)
@@ -33,12 +36,22 @@ class VectorEditorWindow(QMainWindow):
         exit_action.setStatusTip("Exit the application")
         exit_action.triggered.connect(self.close)
 
+        group_action = QAction("Group", self)
+        group_action.setShortcut("Ctrl+G")
+        group_action.setStatusTip("Group selected shapes")
+        group_action.triggered.connect(self.canvas.group_selection)
+
+        ungroup_action = QAction("Ungroup", self)
+        ungroup_action.setShortcut("Ctrl+U")
+        ungroup_action.setStatusTip("Ungroup selected group")
+        ungroup_action.triggered.connect(self.canvas.ungroup_selection)
+
         file_menu.addAction(exit_action)
+        edit_menu.addAction(group_action)
+        edit_menu.addAction(ungroup_action)
 
         toolbar = self.addToolBar("File")
         toolbar.addAction(exit_action)
-
-        self._setup_layout()
 
     def _setup_layout(self):
         # 1. Create Main Container
