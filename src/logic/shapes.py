@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QGraphicsPathItem
+from PySide6.QtWidgets import QGraphicsPathItem, QGraphicsItemGroup
 from PySide6.QtGui import QPen, QColor, QPainterPath
 
 class Shape(QGraphicsPathItem):
@@ -7,10 +7,10 @@ class Shape(QGraphicsPathItem):
 
         if type(self) is Shape:
             raise NotImplementedError("Abstract class Shape cannot be instantiated directly.")
-        
+
         self.color = color
         self.stroke_width = stroke_width
-        
+
         self._setup_pen()
         self._setup_flags()
 
@@ -45,6 +45,35 @@ class Shape(QGraphicsPathItem):
     def set_active_color(self, color: str):
         self.color = color
         self._setup_pen()
+
+class Group(QGraphicsItemGroup, Shape):
+    def __init__(self):
+        super().__init__()
+        self.setHandlesChildEvents(True)
+        self._setup_flags()
+
+    def _setup_flags(self):
+        self.setFlag(QGraphicsItemGroup.GraphicsItemFlag.ItemIsSelectable, True)
+        self.setFlag(QGraphicsItemGroup.GraphicsItemFlag.ItemIsMovable, True)
+
+    @property
+    def type_name(self) -> str:
+        return "group"
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.type_name,
+            "pos": [self.pos().x(), self.pos().y()],
+            "children": [item.to_dict() for item in self.childItems() if isinstance(item, Shape)]
+        }
+
+    def set_geometry(self):
+        pass  # Group geometry is managed by its children
+
+    def set_active_color(self, color: str):
+        for item in self.childItems():
+            if isinstance(item, Shape):
+                item.set_active_color(color)
 
 class Rectangle(Shape):
     def __init__(self, x, y, w, h, color="black", stroke_width=2):
