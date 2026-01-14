@@ -4,6 +4,7 @@ from PySide6.QtGui import QCloseEvent, QAction
 from PySide6.QtCore import Qt
 
 from src.widgets.canvas import EditorCanvas
+from src.widgets.properties import PropertiesPanel
 
 class VectorEditorWindow(QMainWindow):
     def __init__(self):
@@ -97,9 +98,12 @@ class VectorEditorWindow(QMainWindow):
         self.canvas = EditorCanvas()
         self.canvas.set_tool(self.current_tool)
 
+        self_props_panel = PropertiesPanel(self.canvas.scene)
+        
         # 3. Assemble
         main_layout.addWidget(tools_panel)
         main_layout.addWidget(self.canvas)
+        main_layout.addWidget(self_props_panel)
 
     def on_change_tool(self, tool_name: str):
         self.current_tool = tool_name

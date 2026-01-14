@@ -15,6 +15,9 @@ class Shape:
     def set_geometry(self, start, end):
         pass
 
+    def set_stroke_width(self, width: int):
+        pass
+
 class VectorShape(QGraphicsPathItem):
     def __init__(self, color: str = "black", stroke_width: int = 2):
         super().__init__() 
@@ -36,6 +39,10 @@ class VectorShape(QGraphicsPathItem):
         
     def set_active_color(self, color: str):
         self.color = color
+        self._setup_pen()
+
+    def set_stroke_width(self, width: int):
+        self.stroke_width = width
         self._setup_pen()
 
 class Group(QGraphicsItemGroup, Shape):
@@ -63,6 +70,11 @@ class Group(QGraphicsItemGroup, Shape):
         for item in self.childItems():
             if isinstance(item, Shape):
                 item.set_active_color(color)
+
+    def set_stroke_width(self, width):
+        for item in self.childItems():
+            if isinstance(item, Shape):
+                item.set_stroke_width(width)
 
 class Rectangle(VectorShape):
     def __init__(self, x, y, w, h, color="black", stroke_width=2):
