@@ -52,7 +52,7 @@ class EditorCanvas(QGraphicsView):
         selected_items = self.scene.selectedItems()
         for item in selected_items:
             if isinstance(item, Group):
-                self.scene.destroyGroup(item)
+                self.scene.destroyItemGroup(item)
                 print("Group destroyed")
 
     def mousePressEvent(self, event):

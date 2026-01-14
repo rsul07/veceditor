@@ -1,13 +1,23 @@
 from PySide6.QtWidgets import QGraphicsPathItem, QGraphicsItemGroup
 from PySide6.QtGui import QPen, QColor, QPainterPath
 
-class Shape(QGraphicsPathItem):
+class Shape:
+    @property
+    def type_name(self) -> str:
+        raise NotImplementedError
+
+    def to_dict(self) -> dict:
+        raise NotImplementedError
+
+    def set_active_color(self, color: str):
+        pass
+
+    def set_geometry(self, start, end):
+        pass
+
+class VectorShape(QGraphicsPathItem):
     def __init__(self, color: str = "black", stroke_width: int = 2):
         super().__init__() 
-
-        if type(self) is Shape:
-            raise NotImplementedError("Abstract class Shape cannot be instantiated directly.")
-
         self.color = color
         self.stroke_width = stroke_width
 
@@ -20,28 +30,10 @@ class Shape(QGraphicsPathItem):
         self.setPen(pen)
 
     def _setup_flags(self):
-        # Enable selection and movement logic provided by Qt
         self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemSendsGeometryChanges)
-
-    # --- Abstract Contract ---
-
-    @property
-    def type_name(self) -> str:
-        """String identifier for the shape type"""
-        raise NotImplementedError("Shape subclasses must implement type_name")
-
-    def to_dict(self) -> dict:
-        """Serialize shape data to dictionary"""
-        raise NotImplementedError("Shape subclasses must implement to_dict")
-
-    def set_geometry(self, start_point, end_point):
-        """Update shape geometry based on start and end points"""
-        raise NotImplementedError("Shape subclasses must implement set_geometry")
-
-    # --- Common Methods ---
-    
+        
     def set_active_color(self, color: str):
         self.color = color
         self._setup_pen()
@@ -49,12 +41,9 @@ class Shape(QGraphicsPathItem):
 class Group(QGraphicsItemGroup, Shape):
     def __init__(self):
         super().__init__()
-        self.setHandlesChildEvents(True)
-        self._setup_flags()
-
-    def _setup_flags(self):
         self.setFlag(QGraphicsItemGroup.GraphicsItemFlag.ItemIsSelectable, True)
         self.setFlag(QGraphicsItemGroup.GraphicsItemFlag.ItemIsMovable, True)
+        self.setHandlesChildEvents(True)
 
     @property
     def type_name(self) -> str:
@@ -75,7 +64,7 @@ class Group(QGraphicsItemGroup, Shape):
             if isinstance(item, Shape):
                 item.set_active_color(color)
 
-class Rectangle(Shape):
+class Rectangle(VectorShape):
     def __init__(self, x, y, w, h, color="black", stroke_width=2):
         super().__init__(color, stroke_width)
         self.x = x
@@ -112,7 +101,7 @@ class Rectangle(Shape):
             }
         }
 
-class Ellipse(Shape):
+class Ellipse(VectorShape):
     def __init__(self, x, y, w, h, color="black", stroke_width=2):
         super().__init__(color, stroke_width)
         self.x = x
@@ -149,7 +138,7 @@ class Ellipse(Shape):
             }
         }
 
-class Line(Shape):
+class Line(VectorShape):
     def __init__(self, x1, y1, x2, y2, color="black", stroke_width=2):
         super().__init__(color, stroke_width)
         self.x1 = x1
