@@ -18,7 +18,7 @@ class Shape:
     def set_stroke_width(self, width: int):
         pass
 
-class VectorShape(QGraphicsPathItem):
+class VectorShape(QGraphicsPathItem, Shape):
     def __init__(self, color: str = "black", stroke_width: int = 2):
         super().__init__() 
         self.color = color
@@ -79,22 +79,23 @@ class Group(QGraphicsItemGroup, Shape):
 class Rectangle(VectorShape):
     def __init__(self, x, y, w, h, color="black", stroke_width=2):
         super().__init__(color, stroke_width)
-        self.x = x
-        self.y = y
         self.w = w
         self.h = h
+        self.setPos(x, y)
         self._create_geometry()
 
     def _create_geometry(self):
         path = QPainterPath()
-        path.addRect(self.x, self.y, self.w, self.h)
+        path.addRect(0, 0, self.w, self.h)
         self.setPath(path)
 
     def set_geometry(self, start_point, end_point):
-        self.x = min(start_point.x(), end_point.x())
-        self.y = min(start_point.y(), end_point.y())
+        x = min(start_point.x(), end_point.x())
+        y = min(start_point.y(), end_point.y())
         self.w = abs(end_point.x() - start_point.x())
         self.h = abs(end_point.y() - start_point.y())
+
+        self.setPos(x, y)
         self._create_geometry()
 
     @property
@@ -106,7 +107,7 @@ class Rectangle(VectorShape):
             "type": self.type_name,
             "pos": [self.pos().x(), self.pos().y()],
             "props": {
-                "x": self.x, "y": self.y, 
+                "x": self.pos().x(), "y": self.pos().y(), 
                 "w": self.w, "h": self.h,
                 "color": self.pen().color().name(),
                 "stroke_width": self.pen().width()
@@ -116,22 +117,22 @@ class Rectangle(VectorShape):
 class Ellipse(VectorShape):
     def __init__(self, x, y, w, h, color="black", stroke_width=2):
         super().__init__(color, stroke_width)
-        self.x = x
-        self.y = y
         self.w = w
         self.h = h
+        self.setPos(x, y)
         self._create_geometry()
 
     def _create_geometry(self):
         path = QPainterPath()
-        path.addEllipse(self.x, self.y, self.w, self.h)
+        path.addEllipse(0, 0, self.w, self.h)
         self.setPath(path)
 
     def set_geometry(self, start_point, end_point):
-        self.x = min(start_point.x(), end_point.x())
-        self.y = min(start_point.y(), end_point.y())
+        x = min(start_point.x(), end_point.x())
+        y = min(start_point.y(), end_point.y())
         self.w = abs(end_point.x() - start_point.x())
         self.h = abs(end_point.y() - start_point.y())
+        self.setPos(x, y)
         self._create_geometry()
 
     @property
@@ -143,7 +144,7 @@ class Ellipse(VectorShape):
             "type": self.type_name,
             "pos": [self.pos().x(), self.pos().y()],
             "props": {
-                "x": self.x, "y": self.y, 
+                "x": self.pos().x(), "y": self.pos().y(), 
                 "w": self.w, "h": self.h,
                 "color": self.pen().color().name(),
                 "stroke_width": self.pen().width()
