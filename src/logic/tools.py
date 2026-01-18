@@ -3,11 +3,13 @@ from PySide6.QtWidgets import QGraphicsView
 from PySide6.QtCore import Qt, QPointF
 
 from src.logic.factory import ShapeFactory
+from src.logic.commands import AddShapeCommand
 
 class Tool(ABC):
-    def __init__(self, view: QGraphicsView):
+    def __init__(self, view: QGraphicsView, undo_stack):
         self.view = view
         self.scene = view.scene
+        self.undo_stack = undo_stack
 
     @abstractmethod
     def mouse_press(self, event): pass
@@ -19,6 +21,9 @@ class Tool(ABC):
     def mouse_release(self, event): pass
 
 class SelectionTool(Tool):
+    def __init__(self, view: QGraphicsView, undo_stack):
+        super().__init__(view, undo_stack)
+
     def mouse_press(self, event):
         # Delegate to standard Qt logic (selection/moving)
         QGraphicsView.mousePressEvent(self.view, event)
@@ -44,8 +49,8 @@ class SelectionTool(Tool):
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
 
 class CreationTool(Tool):
-    def __init__(self, view, shape_type: str, color: str = "black"):
-        super().__init__(view)
+    def __init__(self, view, shape_type: str, undo_stack, color: str = "black"):
+        super().__init__(view, undo_stack)
         self.shape_type = shape_type
         self.color = color
         self.start_pos = None
@@ -70,6 +75,20 @@ class CreationTool(Tool):
             self.temp_shape.set_geometry(self.start_pos, current_pos)
 
     def mouse_release(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton and self.start_pos:
+            if self.temp_shape:
+                self.scene.removeItem(self.temp_shape)
+                self.temp_shape = None
+
+            end_pos = self.view.mapToScene(event.pos())
+            try:
+                final_shape = ShapeFactory.create_shape(
+                    self.shape_type, self.start_pos, end_pos, self.color
+                )
+                command = AddShapeCommand(self.scene, final_shape)
+                self.undo_stack.push(command)
+                print(f"Action {command.text()}")
+            except ValueError:
+                pass
+
             self.start_pos = None
-            self.temp_shape = None

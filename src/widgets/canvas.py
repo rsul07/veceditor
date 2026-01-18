@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPainter
+from PySide6.QtGui import QPainter, QUndoStack
 
 from src.logic.shapes import Group
 from src.logic.tools import SelectionTool, CreationTool
@@ -13,11 +13,14 @@ class EditorCanvas(QGraphicsView):
         self.scene.setSceneRect(0, 0, 800, 600)
         self.setRenderHint(QPainter.Antialiasing) # Enable Antialiasing for smooth lines
 
+        self.undo_stack = QUndoStack(self)
+        self.undo_stack.setUndoLimit(50)
+
         self.tools = {
-            "selection": SelectionTool(self),
-            "line": CreationTool(self, "line"),
-            "rect": CreationTool(self, "rect"),
-            "ellipse": CreationTool(self, "ellipse"),
+            "selection": SelectionTool(self, self.undo_stack),
+            "line": CreationTool(self, "line", self.undo_stack),
+            "rect": CreationTool(self, "rect", self.undo_stack),
+            "ellipse": CreationTool(self, "ellipse", self.undo_stack),
         }
 
         self.active_tool = self.tools["line"] 

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QMainWindow, QMessageBox, QWidget, 
                                                        QVBoxLayout, QHBoxLayout, QPushButton, QFrame)
-from PySide6.QtGui import QCloseEvent, QAction
+from PySide6.QtGui import QCloseEvent, QAction, QKeySequence
 from PySide6.QtCore import Qt
 
 from src.widgets.canvas import EditorCanvas
@@ -47,12 +47,31 @@ class VectorEditorWindow(QMainWindow):
         ungroup_action.setStatusTip("Ungroup selected group")
         ungroup_action.triggered.connect(self.canvas.ungroup_selection)
 
+        stack = self.canvas.undo_stack
+
+        undo_action = stack.createUndoAction(self)
+        undo_action.setShortcut(QKeySequence.StandardKey.Undo)
+
+        redo_action = stack.createRedoAction(self)
+        redo_action.setShortcut(QKeySequence.StandardKey.Redo)
+
+        # Add actions to menu
         file_menu.addAction(exit_action)
         edit_menu.addAction(group_action)
         edit_menu.addAction(ungroup_action)
+        edit_menu.addSeparator()
+        edit_menu.addAction(undo_action)
+        edit_menu.addAction(redo_action)
 
+        # Toolbar
         toolbar = self.addToolBar("File")
         toolbar.addAction(exit_action)
+        toolbar.addSeparator()
+        toolbar.addAction(group_action)
+        toolbar.addAction(ungroup_action)
+        toolbar.addSeparator()
+        toolbar.addAction(undo_action)
+        toolbar.addAction(redo_action)
 
     def _setup_layout(self):
         # 1. Create Main Container
