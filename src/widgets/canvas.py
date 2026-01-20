@@ -4,6 +4,7 @@ from PySide6.QtGui import QPainter, QUndoStack
 
 from src.logic.shapes import Group
 from src.logic.tools import SelectionTool, CreationTool
+from src.logic.commands import DeleteCommand
 
 class EditorCanvas(QGraphicsView):
     def __init__(self):
@@ -66,3 +67,14 @@ class EditorCanvas(QGraphicsView):
 
     def mouseReleaseEvent(self, event):
         self.active_tool.mouse_release(event)
+
+    def delete_selection(self):
+        selected = self.scene.selectedItems()
+        if not selected:
+            return
+
+        self.undo_stack.beginMacro("Delete Selection")
+        for item in selected:
+            command = DeleteCommand(self.scene, item)
+            self.undo_stack.push(command)
+        self.undo_stack.endMacro()

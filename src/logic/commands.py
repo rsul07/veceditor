@@ -21,3 +21,32 @@ class AddShapeCommand(QUndoCommand):
     def undo(self):
         # Called on Undo
         self.scene.removeItem(self.item)
+
+class MoveCommand(QUndoCommand):
+    def __init__(self, item, old_pos, new_pos):
+        super().__init__()
+        self.item = item
+        self.old_pos = old_pos
+        self.new_pos = new_pos
+        
+        self.setText(f"Move {getattr(item, 'type_name', 'Item')}")
+
+    def redo(self):
+        self.item.setPos(self.new_pos)
+
+    def undo(self):
+        self.item.setPos(self.old_pos)
+
+class DeleteCommand(QUndoCommand):
+    def __init__(self, scene, item):
+        super().__init__()
+        self.scene = scene
+        self.item = item
+        
+        self.setText(f"Delete {getattr(item, 'type_name', 'Item')}")
+
+    def redo(self):
+        self.scene.removeItem(self.item)
+
+    def undo(self):
+        self.scene.addItem(self.item)

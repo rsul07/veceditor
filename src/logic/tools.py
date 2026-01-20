@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QGraphicsView
 from PySide6.QtCore import Qt, QPointF
 
 from src.logic.factory import ShapeFactory
-from src.logic.commands import AddShapeCommand
+from src.logic.commands import AddShapeCommand, MoveCommand
 
 class Tool(ABC):
     def __init__(self, view: QGraphicsView, undo_stack):
@@ -23,10 +23,15 @@ class Tool(ABC):
 class SelectionTool(Tool):
     def __init__(self, view: QGraphicsView, undo_stack):
         super().__init__(view, undo_stack)
+        self.item_positions = {}
 
     def mouse_press(self, event):
         # Delegate to standard Qt logic (selection/moving)
         QGraphicsView.mousePressEvent(self.view, event)
+
+        self.item_positions.clear()
+        for item in self.scene.selectedItems():
+            self.item_positions[item] = item.pos()
 
         # Cursor feedback
         item = self.view.itemAt(event.pos())
@@ -47,6 +52,21 @@ class SelectionTool(Tool):
     def mouse_release(self, event):
         QGraphicsView.mouseReleaseEvent(self.view, event)
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
+
+        moved_items = []
+        for item, old_pos in self.item_positions.items():
+            new_pos = item.pos()
+            if old_pos != new_pos:
+                moved_items.append((item, old_pos, new_pos))
+
+        if moved_items:
+            self.undo_stack.beginMacro("Move Items")
+            for item, old_pos, new_pos in moved_items:
+                command = MoveCommand(item, old_pos, new_pos)
+                self.undo_stack.push(command)
+            self.undo_stack.endMacro()
+
+        self.item_positions.clear()
 
 class CreationTool(Tool):
     def __init__(self, view, shape_type: str, undo_stack, color: str = "black"):

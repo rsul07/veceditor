@@ -55,6 +55,11 @@ class VectorEditorWindow(QMainWindow):
         redo_action = stack.createRedoAction(self)
         redo_action.setShortcut(QKeySequence.StandardKey.Redo)
 
+        delete_action = QAction("Delete", self)
+        delete_action.setShortcut(QKeySequence.StandardKey.Delete)
+        delete_action.triggered.connect(self.canvas.delete_selection)
+        self.addAction(delete_action)  # Enable shortcut without menu
+
         # Add actions to menu
         file_menu.addAction(exit_action)
         edit_menu.addAction(group_action)
@@ -62,6 +67,8 @@ class VectorEditorWindow(QMainWindow):
         edit_menu.addSeparator()
         edit_menu.addAction(undo_action)
         edit_menu.addAction(redo_action)
+        edit_menu.addSeparator()
+        edit_menu.addAction(delete_action)
 
         # Toolbar
         toolbar = self.addToolBar("File")
