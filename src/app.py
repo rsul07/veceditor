@@ -124,7 +124,7 @@ class VectorEditorWindow(QMainWindow):
         self.canvas = EditorCanvas()
         self.canvas.set_tool(self.current_tool)
 
-        self_props_panel = PropertiesPanel(self.canvas.scene)
+        self_props_panel = PropertiesPanel(self.canvas.scene, self.canvas.undo_stack)
         
         # 3. Assemble
         main_layout.addWidget(tools_panel)

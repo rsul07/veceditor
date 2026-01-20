@@ -1,12 +1,15 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, 
                                QSpinBox, QDoubleSpinBox, QPushButton, 
                                QColorDialog, QHBoxLayout)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
+
+from src.logic.commands import ChangeWidthCommand, ChangeColorCommand, ChangePosCommand
 
 class PropertiesPanel(QWidget):
-    def __init__(self, scene):
+    def __init__(self, scene, undo_stack):
         super().__init__()
         self.scene = scene
+        self.undo_stack = undo_stack
         self._init_ui()
         
         # PATTERN OBSERVER: Listen to selection changes
@@ -103,9 +106,18 @@ class PropertiesPanel(QWidget):
 
     # --- VIEW -> MODEL (Write Data) ---
     def on_width_changed(self, value):
-        for item in self.scene.selectedItems():
-            if hasattr(item, "set_stroke_width"):
-                item.set_stroke_width(value)
+        selected_items = self.scene.selectedItems()
+        if not selected_items:
+            return
+
+        # Use Macro to group changes
+        self.undo_stack.beginMacro("Change Width")
+        for item in selected_items:
+            # We don't check hasAttr here because command checks it inside
+            cmd = ChangeWidthCommand(item, value)
+            self.undo_stack.push(cmd)
+        self.undo_stack.endMacro()
+        
         self.scene.update()
 
     def on_color_clicked(self):
@@ -113,15 +125,32 @@ class PropertiesPanel(QWidget):
         if color.isValid():
             hex_color = color.name()
             self.btn_color.setStyleSheet(f"background-color: {hex_color}; border: 1px solid gray;")
-            
-            for item in self.scene.selectedItems():
-                if hasattr(item, "set_active_color"):
-                    item.set_active_color(hex_color)
+
+            selected_items = self.scene.selectedItems()
+            if not selected_items:
+                return
+
+            self.undo_stack.beginMacro("Change Color")
+            for item in selected_items:
+                cmd = ChangeColorCommand(item, hex_color)
+                self.undo_stack.push(cmd)
+            self.undo_stack.endMacro()
+
             self.scene.update()
 
     def on_geo_changed(self):
         new_x = self.spin_x.value()
         new_y = self.spin_y.value()
-        
-        for item in self.scene.selectedItems():
-            item.setPos(new_x, new_y)
+        new_pos = QPointF(new_x, new_y)
+
+        selected_items = self.scene.selectedItems()
+        if not selected_items:
+            return
+
+        self.undo_stack.beginMacro("Change Position")
+        for item in selected_items:
+            cmd = ChangePosCommand(item, new_pos)
+            self.undo_stack.push(cmd)
+        self.undo_stack.endMacro()
+
+        self.scene.update()
