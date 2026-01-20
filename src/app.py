@@ -1,10 +1,15 @@
 from PySide6.QtWidgets import (QMainWindow, QMessageBox, QWidget, 
-                                                       QVBoxLayout, QHBoxLayout, QPushButton, QFrame)
+                               QVBoxLayout, QHBoxLayout, QPushButton, 
+                               QFrame, QFileDialog)
 from PySide6.QtGui import QCloseEvent, QAction, QKeySequence
 from PySide6.QtCore import Qt
 
 from src.widgets.canvas import EditorCanvas
 from src.widgets.properties import PropertiesPanel
+
+from src.logic.strategies import JsonSaveStrategy, ImageSaveStrategy
+from src.logic.io_manager import FileManager
+from src.logic.factory import ShapeFactory
 
 class VectorEditorWindow(QMainWindow):
     def __init__(self):
@@ -37,6 +42,16 @@ class VectorEditorWindow(QMainWindow):
         exit_action.setStatusTip("Exit the application")
         exit_action.triggered.connect(self.close)
 
+        open_action = QAction("Open...", self)
+        open_action.setShortcut("Ctrl+O")
+        open_action.setStatusTip("Open a vector project")
+        open_action.triggered.connect(self.on_open_clicked)
+
+        save_action = QAction("Save", self)
+        save_action.setShortcut("Ctrl+S")
+        save_action.setStatusTip("Save the vector project")
+        save_action.triggered.connect(self.on_save_clicked)
+
         group_action = QAction("Group", self)
         group_action.setShortcut("Ctrl+G")
         group_action.setStatusTip("Group selected shapes")
@@ -62,6 +77,10 @@ class VectorEditorWindow(QMainWindow):
 
         # Add actions to menu
         file_menu.addAction(exit_action)
+        file_menu.addSeparator()
+        file_menu.addAction(open_action)
+        file_menu.addAction(save_action)
+
         edit_menu.addAction(group_action)
         edit_menu.addAction(ungroup_action)
         edit_menu.addSeparator()
@@ -156,3 +175,57 @@ class VectorEditorWindow(QMainWindow):
         else:
             event.ignore()
             print("Exit canceled")
+
+    def on_save_clicked(self):
+        filters = "Vector Project (*.json);;PNG Image (*.png);;JPEG Image (*.jpg)"
+        filename, selected_filter = QFileDialog.getSaveFileName(self, "Save File", "", filters)
+
+        if not filename:
+            return
+
+        strategy = None
+        if filename.lower().endswith(".json"):
+            strategy = JsonSaveStrategy()
+        elif filename.lower().endswith(".png"):
+            strategy = ImageSaveStrategy(fmt="PNG", bg_color="transparent")
+        elif filename.lower().endswith(".jpg"):
+            strategy = ImageSaveStrategy(fmt="JPG", bg_color="white")
+        else:
+            strategy = JsonSaveStrategy()  # Default to JSON
+
+        try:
+            strategy.save(filename, self.canvas.scene)
+            self.statusBar().showMessage(f"File saved: {filename}")
+        except Exception as e:
+            QMessageBox.critical(self, "Save Error", f"Failed to save file:\n{str(e)}")
+            self.statusBar().showMessage("Save failed")
+
+    def on_open_clicked(self):
+        filename, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Vector Project (*.json)")
+        if not filename:
+            return
+
+        try:
+            data = FileManager.load_json(filename)
+
+            self.canvas.scene.clear()
+            self.canvas.undo_stack.clear()
+
+            scene_info = data.get("scene", {})
+            w = scene_info.get("width", 800)
+            h = scene_info.get("height", 600)
+            self.canvas.scene.setSceneRect(0, 0, w, h)
+
+            shapes = data.get("shapes", [])
+            for shape_data in shapes:
+                try:
+                    shape_obj = ShapeFactory.from_dict(shape_data)
+                    self.canvas.scene.addItem(shape_obj)
+                except Exception as e:
+                    print(f"Skipping corrupt shape: {e}")
+
+            self.statusBar().showMessage(f"Loaded: {filename}")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Could not load file:\n{e}")
+            self.statusBar().showMessage("Load failed")
